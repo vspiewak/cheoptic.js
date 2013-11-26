@@ -55,7 +55,7 @@
 					width: 0.30,
 					height: 0.30,
 					background: new THREE.Color().setRGB(0),
-					eye: [ 0, 150, 2000 ],
+					eye: [ 0 , 150, 2000 ],
 					up: [ 0, 1, 0 ],
 					fov: 10,
 					updateCamera: function ( camera, scene, mouseX, mouseY ) {
@@ -69,7 +69,7 @@
 					bottom: 0,
 					width: 0.30,
 					height: 0.30,
-					background: new THREE.Color().setRGB(0),
+					background: new THREE.Color().setRGB(0.5, 0.5, 0.5),
 					eye: [ 0, 150, 2000 ],
 					up: [ 0, 1, 0 ],
 					fov: 10,
@@ -129,6 +129,7 @@
 					camera.up.y = view.up[ 1 ];
 					camera.up.z = view.up[ 2 ];
 					view.camera = camera;
+
 				}
 
 				scene = new THREE.Scene();
