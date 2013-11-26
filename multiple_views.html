@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - multiple views</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+
+				color: #0080ff;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		
+		<script src="three.min.js"></script>
+		<script src="stats.min.js"></script>
+
+		<script>
+
+			var container, stats;
+
+			var views, scene, renderer;
+
+			var mesh, group1, group2, group3, light;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowWidth, windowHeight;
+
+			var views = [
+				{ 
+					left: 0.35,
+					bottom: 0.70,
+					width: 0.30,
+					height: 0.30,
+					background: new THREE.Color().setRGB(0),
+					eye: [ 0, 150, 2000 ],
+					up: [ 0, 1, 0 ],
+					fov: 10,
+					updateCamera: function ( camera, scene, mouseX, mouseY ) {
+					  camera.position.x += mouseX * 0.05;
+					  camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+					  camera.lookAt( scene.position );
+					}
+				},
+				{ 
+					left: 0.35,
+					bottom: 0,
+					width: 0.30,
+					height: 0.30,
+					background: new THREE.Color().setRGB(0),
+					eye: [ 0, 150, 2000 ],
+					up: [ 0, 1, 0 ],
+					fov: 10,
+					updateCamera: function ( camera, scene, mouseX, mouseY ) {
+					  camera.position.x += mouseX * 0.05;
+					  camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+					  camera.lookAt( scene.position );
+					}
+				},
+				{ 
+					left: 0.70,
+					bottom: 0.35,
+					width: 0.30,
+					height: 0.30,
+					background: new THREE.Color().setRGB(0),
+					eye: [ 0, 150, 2000 ],
+					up: [ 0, 1, 0 ],
+					fov: 10,
+					updateCamera: function ( camera, scene, mouseX, mouseY ) {
+					  camera.position.x += mouseX * 0.05;
+					  camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+					  camera.lookAt( scene.position );
+					}
+				},
+				{ 
+					left: 0,
+					bottom: 0.35,
+					width: 0.30,
+					height: 0.30,
+					background: new THREE.Color().setRGB(0),
+					eye: [ 0, 150, 2000 ],
+					up: [ 0, 1, 0 ],
+					fov: 10,
+					updateCamera: function ( camera, scene, mouseX, mouseY ) {
+					  camera.position.x += mouseX * 0.05;
+					  camera.position.x = Math.max( Math.min( camera.position.x, 2000 ), -2000 );
+					  camera.lookAt( scene.position );
+					}
+				}
+			];
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				for (var ii =  0; ii < views.length; ++ii ) {
+
+					var view = views[ii];
+					camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+					camera.position.x = view.eye[ 0 ];
+					camera.position.y = view.eye[ 1 ];
+					camera.position.z = view.eye[ 2 ];
+					camera.up.x = view.up[ 0 ];
+					camera.up.y = view.up[ 1 ];
+					camera.up.z = view.up[ 2 ];
+					view.camera = camera;
+				}
+
+				scene = new THREE.Scene();
+
+				var light = new THREE.DirectionalLight( 0xefefff, 2 );
+				light.position.set( 1, 1, 1 ).normalize();
+				scene.add( light );
+
+				var light = new THREE.DirectionalLight( 0xffefef, 2 );
+				light.position.set( -1, -1, -1 ).normalize();
+				scene.add( light );
+
+				var loader = new THREE.JSONLoader( true );
+				loader.load( "horse.js", function( geometry ) {
+
+					mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0x606060, morphTargets: true } ) );
+					mesh.scale.set( 1.5, 1.5, 1.5 );
+					scene.add( mesh );
+
+				} );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = ( event.clientX - windowWidth / 2 );
+				mouseY = ( event.clientY - windowHeight / 2 );
+
+			}
+
+			function updateSize() {
+
+				if ( windowWidth != window.innerWidth || windowHeight != window.innerHeight ) {
+
+					windowWidth  = window.innerWidth;
+					windowHeight = window.innerHeight;
+
+					renderer.setSize ( windowWidth, windowHeight );
+
+				}
+
+			}
+
+			function animate() {
+
+				render();
+				stats.update();
+
+				requestAnimationFrame( animate );
+			}
+
+            var radius = 600;
+			var theta = 0;
+
+			var duration = 1000;
+			var keyframes = 15, interpolation = duration / keyframes;
+			var lastKeyframe = 0, currentKeyframe = 0;
+
+			function render() {
+
+				updateSize();
+
+				// horse animation
+                if ( mesh ) {
+
+					// Alternate morph targets
+
+					var time = Date.now() % duration;
+
+					var keyframe = Math.floor( time / interpolation );
+
+					if ( keyframe != currentKeyframe ) {
+
+						mesh.morphTargetInfluences[ lastKeyframe ] = 0;
+						mesh.morphTargetInfluences[ currentKeyframe ] = 1;
+						mesh.morphTargetInfluences[ keyframe ] = 0;
+
+						lastKeyframe = currentKeyframe;
+						currentKeyframe = keyframe;
+
+					}
+
+					mesh.morphTargetInfluences[ keyframe ] = ( time % interpolation ) / interpolation;
+					mesh.morphTargetInfluences[ lastKeyframe ] = 1 - mesh.morphTargetInfluences[ keyframe ];
+
+				}
+				//end horse animation
+
+
+				for ( var ii = 0; ii < views.length; ++ii ) {
+
+					view = views[ii];
+					camera = view.camera;
+
+					//view.updateCamera( camera, scene, mouseX, mouseY );
+
+					var left   = Math.floor( windowWidth  * view.left );
+					var bottom = Math.floor( windowHeight * view.bottom );
+					var width  = Math.floor( windowWidth  * view.width );
+					var height = Math.floor( windowHeight * view.height );
+					renderer.setViewport( left, bottom, width, height );
+					renderer.setScissor( left, bottom, width, height );
+					renderer.enableScissorTest ( true );
+					renderer.setClearColor( view.background );
+
+					camera.aspect = width / height;
+					camera.updateProjectionMatrix();
+
+					renderer.render( scene, camera );
+				}
+
+			}
+
+		</script>
+
+	</body>
+</html>
